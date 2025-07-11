@@ -302,19 +302,25 @@
     <div class="container">
         <div class="header">
             <h1>💰 PayPay銀行総振データ作成ツール</h1>
-            <p>簡単・安全・高機能な振込データ生成システム</p>
+            <p>PayPay銀行指定フォーマット（CSV）対応</p>
         </div>
         
         <div class="content">
             <!-- 基本設定 -->
             <div class="section">
-                <h2><div class="section-icon">1</div>基本設定（振込依頼人情報）</h2>
+                <h2><div class="section-icon">1</div>基本設定</h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>振込依頼人名</label>
+                        <label>振込依頼人名（デフォルト）</label>
                         <input type="text" id="defaultSenderName" maxlength="48" placeholder="例: ｽｽﾞｷ ﾊﾅｺ">
-                        <small style="color: #666; margin-top: 5px;">全角カタカナで入力してください（各振込で個別設定も可能）</small>
+                        <small style="color: #666; margin-top: 5px;">英数カナ48文字以内（各振込で個別設定も可能）</small>
                     </div>
+                </div>
+                <div class="info">
+                    <strong>📝 PayPay銀行指定フォーマットについて</strong><br>
+                    • 振込指定日はCSVファイル内には含まれません<br>
+                    • PayPay銀行のアップロード画面で振込指定日を入力してください<br>
+                    • データレコード（122文字）+ トレーラーレコード（17文字）の形式です
                 </div>
             </div>
 
@@ -339,11 +345,13 @@
             <div class="section">
                 <h2><div class="section-icon">3</div>CSVファイル生成</h2>
                 <div class="info">
-                    <strong>💡 ご利用前に</strong><br>
+                    <strong>💡 PayPay銀行指定フォーマット仕様</strong><br>
                     • 銀行コード・支店コードは4桁・3桁の半角数字で入力してください<br>
-                    • 受取人名は全角カタカナで入力してください<br>
-                    • 口座番号は半角数字のみで入力してください<br>
-                    • 振込金額は1円以上99,999,999円以下で入力してください
+                    • 受取人名は英数カナ48文字以内で入力してください<br>
+                    • 振込依頼人名は英数カナ48文字以内で入力してください<br>
+                    • 口座番号は半角数字7桁以内で入力してください<br>
+                    • 振込金額は半角数字10桁以内で入力してください<br>
+                    • 生成されるファイルはPayPay銀行専用フォーマットです
                 </div>
                 
                 <div class="loading" id="loading">
@@ -388,12 +396,12 @@
                     <div class="form-group">
                         <label>銀行コード <span class="required">*</span></label>
                         <input type="text" id="bankCode-${transferCount}" maxlength="4" placeholder="例: 0001" required>
-                        <small style="color: #666; margin-top: 5px;">4桁の半角数字</small>
+                        <small style="color: #666; margin-top: 5px;">半角数字4桁</small>
                     </div>
                     <div class="form-group">
                         <label>支店コード <span class="required">*</span></label>
                         <input type="text" id="branchCode-${transferCount}" maxlength="3" placeholder="例: 001" required>
-                        <small style="color: #666; margin-top: 5px;">3桁の半角数字</small>
+                        <small style="color: #666; margin-top: 5px;">半角数字3桁</small>
                     </div>
                     <div class="form-group">
                         <label>預金種目 <span class="required">*</span></label>
@@ -407,22 +415,22 @@
                     <div class="form-group">
                         <label>口座番号 <span class="required">*</span></label>
                         <input type="text" id="accountNumber-${transferCount}" maxlength="7" placeholder="例: 1234567" required>
-                        <small style="color: #666; margin-top: 5px;">7桁以内の半角数字</small>
+                        <small style="color: #666; margin-top: 5px;">半角数字7桁以内</small>
                     </div>
                     <div class="form-group">
                         <label>受取人名 <span class="required">*</span></label>
                         <input type="text" id="recipientName-${transferCount}" maxlength="48" placeholder="例: ﾔﾏﾀﾞ ﾀﾛｳ" required>
-                        <small style="color: #666; margin-top: 5px;">全角カタカナ（48文字以内）</small>
+                        <small style="color: #666; margin-top: 5px;">英数カナ48文字以内</small>
                     </div>
                     <div class="form-group">
                         <label>振込金額 <span class="required">*</span></label>
-                        <input type="number" id="transferAmount-${transferCount}" min="1" max="99999999" placeholder="例: 50000" required>
-                        <small style="color: #666; margin-top: 5px;">1円以上99,999,999円以下</small>
+                        <input type="number" id="transferAmount-${transferCount}" min="1" max="9999999999" placeholder="例: 50000" required>
+                        <small style="color: #666; margin-top: 5px;">半角数字10桁以内</small>
                     </div>
                     <div class="form-group">
                         <label>振込依頼人名</label>
                         <input type="text" id="senderName-${transferCount}" maxlength="48" placeholder="例: ｽｽﾞｷ ﾊﾅｺ" value="${defaultSenderName}">
-                        <small style="color: #666; margin-top: 5px;">全角カタカナ（空欄可）</small>
+                        <small style="color: #666; margin-top: 5px;">英数カナ48文字以内（任意項目）</small>
                     </div>
                 </div>
             `;
@@ -483,7 +491,7 @@
                     return /^\d{1,7}$/.test(value);
                 case 'amount':
                     const num = parseInt(value);
-                    return !isNaN(num) && num > 0 && num <= 99999999;
+                    return !isNaN(num) && num > 0 && num <= 9999999999;
                 case 'recipientName':
                     return value.length > 0 && value.length <= 48;
                 case 'senderName':
@@ -513,6 +521,7 @@
                     // 振込先データの検証と処理
                     let totalTransferAmount = 0;
                     let validTransfers = 0;
+                    const dataRecords = [];
                     
                     transfers.forEach((id, index) => {
                         const tBankCode = toHalfWidth(document.getElementById(`bankCode-${id}`).value || '');
@@ -545,7 +554,7 @@
                             errors.push(`振込先${index + 1}: 受取人名を48文字以内で入力してください`);
                         }
                         if (!validateInput(tTransferAmount, 'amount')) {
-                            errors.push(`振込先${index + 1}: 振込金額は1円以上99,999,999円以下で入力してください`);
+                            errors.push(`振込先${index + 1}: 振込金額は1円以上9,999,999,999円以下で入力してください`);
                         }
                         if (!validateInput(tSenderName, 'senderName')) {
                             errors.push(`振込先${index + 1}: 振込依頼人名は48文字以内で入力してください`);
@@ -554,6 +563,17 @@
                         if (validateInput(tTransferAmount, 'amount')) {
                             totalTransferAmount += parseInt(tTransferAmount);
                         }
+
+                        // データレコードを保存
+                        dataRecords.push({
+                            bankCode: tBankCode,
+                            branchCode: tBranchCode,
+                            accountType: tAccountType,
+                            accountNumber: tAccountNumber,
+                            recipientName: tRecipientName,
+                            transferAmount: tTransferAmount,
+                            senderName: tSenderName
+                        });
                     });
 
                     if (validTransfers === 0) {
@@ -566,47 +586,34 @@
                         return;
                     }
 
-                    // データレコード作成
-                    transfers.forEach(id => {
-                        const tBankCode = toHalfWidth(document.getElementById(`bankCode-${id}`).value || '');
-                        const tBranchCode = toHalfWidth(document.getElementById(`branchCode-${id}`).value || '');
-                        const tAccountType = document.getElementById(`accountType-${id}`).value || '';
-                        const tAccountNumber = toHalfWidth(document.getElementById(`accountNumber-${id}`).value || '');
-                        const tRecipientName = document.getElementById(`recipientName-${id}`).value || '';
-                        const tTransferAmount = toHalfWidth(document.getElementById(`transferAmount-${id}`).value || '');
-                        const tSenderName = document.getElementById(`senderName-${id}`).value || '';
-
-                        if (!tBankCode && !tBranchCode && !tAccountType && !tAccountNumber && !tRecipientName && !tTransferAmount) {
-                            return; // 空の振込先はスキップ
-                        }
-
-                        // データレコード（122文字固定）
+                    // データレコード作成（122文字固定）
+                    dataRecords.forEach(record => {
                         const dataRecord = [
-                            '1',                                    // レコード区分
-                            tBankCode.padStart(4, '0'),            // 銀行コード
-                            tBranchCode.padStart(3, '0'),          // 支店コード
-                            tAccountType,                          // 預金種目
-                            tAccountNumber.padEnd(7, ' '),         // 口座番号
-                            tRecipientName.padEnd(48, ' '),        // 受取人名
-                            tTransferAmount.padStart(10, '0'),     // 振込金額
-                            tSenderName.padEnd(48, ' ')            // 振込依頼人名
+                            '1',                                        // レコード区分（1文字）
+                            record.bankCode.padStart(4, '0'),          // 銀行コード（4文字）
+                            record.branchCode.padStart(3, '0'),        // 支店コード（3文字）
+                            record.accountType,                         // 預金種目（1文字）
+                            record.accountNumber.padEnd(7, ' '),       // 口座番号（7文字）
+                            record.recipientName.padEnd(48, ' '),      // 受取人名（48文字）
+                            record.transferAmount.padStart(10, '0'),   // 振込金額（10文字）
+                            record.senderName.padEnd(48, ' ')          // 振込依頼人名（48文字）
                         ].join('');
 
                         csvRows.push(dataRecord);
                     });
 
-                    // トレーラーレコード（17文字固定）
+                    // トレーラーレコード作成（17文字固定）
                     const trailerRecord = [
-                        '2',                                    // レコード区分
-                        '0'.padStart(4, '0'),                  // 合計件数
-                        '0'.padStart(12, '0')                  // 合計金額+予備
+                        '2',                                            // レコード区分（1文字）
+                        validTransfers.toString().padStart(4, '0'),    // 合計件数（4文字）
+                        totalTransferAmount.toString().padStart(12, '0') // 合計金額（12文字）
                     ].join('');
 
                     csvRows.push(trailerRecord);
 
                     // CSVファイルをダウンロード
-                    const csvContent = csvRows.join('\n');
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const csvContent = csvRows.join('\r\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=shift_jis;' });
                     const link = document.createElement('a');
                     
                     if (link.download !== undefined) {
@@ -620,7 +627,7 @@
                     }
 
                     document.getElementById('loading').style.display = 'none';
-                    showSuccess(`CSVファイルが正常に生成されました。総振込件数: ${validTransfers}件、総振込金額: ¥${totalTransferAmount.toLocaleString()}`);
+                    showSuccess(`PayPay銀行指定フォーマットCSVファイルが正常に生成されました。総振込件数: ${validTransfers}件、総振込金額: ¥${totalTransferAmount.toLocaleString()}`);
                     
                 } catch (error) {
                     document.getElementById('loading').style.display = 'none';
