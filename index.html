@@ -589,7 +589,7 @@
                     // データレコード作成（122文字固定）
                     dataRecords.forEach(record => {
                         const dataRecord = [
-                            '1',                                        // レコード区分（1文字）
+                            '1',                                        // レコード区分（1文字）- 必ず半角
                             record.bankCode.padStart(4, '0'),          // 銀行コード（4文字）
                             record.branchCode.padStart(3, '0'),        // 支店コード（3文字）
                             record.accountType,                         // 預金種目（1文字）
@@ -599,21 +599,29 @@
                             record.senderName.padEnd(48, ' ')          // 振込依頼人名（48文字）
                         ].join('');
 
+                        // 文字数チェック
+                        if (dataRecord.length !== 122) {
+                            console.error(`データレコード文字数エラー: ${dataRecord.length}文字`);
+                        }
+
                         csvRows.push(dataRecord);
                     });
 
                     // トレーラーレコード作成（17文字固定）
                     const trailerRecord = [
-                        '2',                                            // レコード区分（1文字）
+                        '2',                                            // レコード区分（1文字）- 必ず半角
                         validTransfers.toString().padStart(4, '0'),    // 合計件数（4文字）
                         totalTransferAmount.toString().padStart(12, '0') // 合計金額（12文字）
                     ].join('');
 
-                    csvRows.push(trailerRecord);
+                    // 文字数チェック
+                    if (trailerRecord.length !== 17) {
+                        console.error(`トレーラーレコード文字数エラー: ${trailerRecord.length}文字`);
+                    }
 
                     // CSVファイルをダウンロード
                     const csvContent = csvRows.join('\r\n');
-                    const blob = new Blob([csvContent], { type: 'text/csv;charset=shift_jis;' });
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement('a');
                     
                     if (link.download !== undefined) {
