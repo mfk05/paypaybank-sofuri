@@ -320,7 +320,7 @@
                     <strong>📝 PayPay銀行指定フォーマットについて</strong><br>
                     • 振込指定日はCSVファイル内には含まれません<br>
                     • PayPay銀行のアップロード画面で振込指定日を入力してください<br>
-                    • データレコード（122文字）+ トレーラーレコード（17文字）の形式です
+                    • データレコード + トレーラーレコードのカンマ区切り形式です
                 </div>
             </div>
 
@@ -346,12 +346,12 @@
                 <h2><div class="section-icon">3</div>CSVファイル生成</h2>
                 <div class="info">
                     <strong>💡 PayPay銀行指定フォーマット仕様</strong><br>
-                    • 銀行コード・支店コードは4桁・3桁の半角数字で入力してください<br>
-                    • 受取人名は英数カナ48文字以内で入力してください<br>
-                    • 振込依頼人名は英数カナ48文字以内で入力してください<br>
-                    • 口座番号は半角数字7桁以内で入力してください<br>
-                    • 振込金額は半角数字10桁以内で入力してください<br>
-                    • 生成されるファイルはPayPay銀行専用フォーマットです
+                    • 銀行コード・支店コードは半角数字で入力してください<br>
+                    • 受取人名は英数カナで入力してください<br>
+                    • 振込依頼人名は英数カナで入力してください<br>
+                    • 口座番号は半角数字で入力してください<br>
+                    • 振込金額は半角数字で入力してください<br>
+                    • 生成されるファイルはカンマ区切りCSV形式です
                 </div>
                 
                 <div class="loading" id="loading">
@@ -586,41 +586,36 @@
                         return;
                     }
 
-                    // データレコード作成（122文字固定）
+                    // データレコード作成（カンマ区切り）
                     dataRecords.forEach(record => {
                         const dataRecord = [
-                            '1',                                        // レコード区分（1文字）- 必ず半角
-                            record.bankCode.padStart(4, '0'),          // 銀行コード（4文字）
-                            record.branchCode.padStart(3, '0'),        // 支店コード（3文字）
-                            record.accountType,                         // 預金種目（1文字）
-                            record.accountNumber.padEnd(7, ' '),       // 口座番号（7文字）
-                            record.recipientName.padEnd(48, ' '),      // 受取人名（48文字）
-                            record.transferAmount.padStart(10, '0'),   // 振込金額（10文字）
-                            record.senderName.padEnd(48, ' ')          // 振込依頼人名（48文字）
-                        ].join('');
-
-                        // 文字数チェック
-                        if (dataRecord.length !== 122) {
-                            console.error(`データレコード文字数エラー: ${dataRecord.length}文字`);
-                        }
+                            '1',                                        // レコード区分
+                            record.bankCode,                            // 銀行コード
+                            record.branchCode,                          // 支店コード
+                            record.accountType,                         // 預金種目
+                            record.accountNumber,                       // 口座番号
+                            record.recipientName,                       // 受取人名
+                            record.transferAmount,                      // 振込金額
+                            record.senderName                           // 振込依頼人名
+                        ].join(',');
 
                         csvRows.push(dataRecord);
                     });
 
-                    // トレーラーレコード作成（17文字固定）
+                    // トレーラーレコード作成（カンマ区切り）
                     const trailerRecord = [
-                        '2',                                            // レコード区分（1文字）- 必ず半角
-                        validTransfers.toString().padStart(4, '0'),    // 合計件数（4文字）
-                        totalTransferAmount.toString().padStart(12, '0') // 合計金額（12文字）
-                    ].join('');
-
-                    // 文字数チェック
-                    if (trailerRecord.length !== 17) {
-                        console.error(`トレーラーレコード文字数エラー: ${trailerRecord.length}文字`);
-                    }
+                        '2',                                            // レコード区分
+                        '',                                             // 空白
+                        '',                                             // 空白
+                        '',                                             // 空白
+                        '',                                             // 空白
+                        validTransfers.toString(),                      // 合計件数
+                        totalTransferAmount.toString(),                 // 合計金額
+                        ''                                              // 空白
+                    ].join(',');
 
                     // CSVファイルをダウンロード
-                    const csvContent = csvRows.join('\r\n');
+                    const csvContent = csvRows.join('\n');
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement('a');
                     
