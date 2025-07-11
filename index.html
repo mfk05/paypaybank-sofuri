@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPay銀行総振データ作成ツール</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #ff6b6b;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .required {
+            color: #ff6b6b;
+            font-size: 0.8em;
+        }
+        
+        input, select {
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+        
+        .transfer-item {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .transfer-item:hover {
+            border-color: #ff6b6b;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .transfer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .transfer-number {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .remove-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #bee5eb;
+        }
+        
+        .total-display {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .total-display h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        
+        .total-display .amount {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff6b6b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 PayPay銀行総振データ作成ツール</h1>
+            <p>簡単・安全・高機能な振込データ生成システム</p>
+        </div>
+        
+        <div class="content">
+            <!-- 基本設定 -->
+            <div class="section">
+                <h2><div class="section-icon">1</div>基本設定（振込依頼人情報）</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>振込依頼人名</label>
+                        <input type="text" id="defaultSenderName" maxlength="48" placeholder="例: ｽｽﾞｷ ﾊﾅｺ">
+                        <small style="color: #666; margin-top: 5px;">全角カタカナで入力してください（各振込で個別設定も可能）</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 振込先追加 -->
+            <div class="section">
+                <h2><div class="section-icon">2</div>振込先管理</h2>
+                <div id="transferList"></div>
+                <div class="actions">
+                    <button type="button" class="btn btn-primary" onclick="addTransfer()">
+                        ➕ 振込先を追加
+                    </button>
+                </div>
+                
+                <div class="total-display" id="totalDisplay" style="display: none;">
+                    <h3>振込合計</h3>
+                    <div class="amount" id="totalAmount">¥0</div>
+                    <div id="totalCount">0件の振込</div>
+                </div>
+            </div>
+
+            <!-- 生成・ダウンロード -->
+            <div class="section">
+                <h2><div class="section-icon">3</div>CSVファイル生成</h2>
+                <div class="info">
+                    <strong>💡 ご利用前に</strong><br>
+                    • 銀行コード・支店コードは4桁・3桁の半角数字で入力してください<br>
+                    • 受取人名は全角カタカナで入力してください<br>
+                    • 口座番号は半角数字のみで入力してください<br>
+                    • 振込金額は1円以上99,999,999円以下で入力してください
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>CSVファイルを生成しています...</p>
+                </div>
+                
+                <div class="actions">
+                    <button type="button" class="btn btn-success" onclick="generateCSV()">
+                        📄 CSVファイルを生成・ダウンロード
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="clearAll()">
+                        🗑️ 全てクリア
+                    </button>
+                </div>
+            </div>
+
+            <div id="errorMessages"></div>
+        </div>
+    </div>
+
+    <script>
+        let transferCount = 0;
+        let transfers = [];
+
+        // 振込先を追加
+        function addTransfer() {
+            transferCount++;
+            const transferList = document.getElementById('transferList');
+            const defaultSenderName = document.getElementById('defaultSenderName').value;
+            
+            const transferDiv = document.createElement('div');
+            transferDiv.className = 'transfer-item';
+            transferDiv.id = `transfer-${transferCount}`;
+            
+            transferDiv.innerHTML = `
+                <div class="transfer-header">
+                    <div class="transfer-number">振込先 ${transferCount}</div>
+                    <button type="button" class="remove-btn" onclick="removeTransfer(${transferCount})">削除</button>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>銀行コード <span class="required">*</span></label>
+                        <input type="text" id="bankCode-${transferCount}" maxlength="4" placeholder="例: 0001" required>
+                        <small style="color: #666; margin-top: 5px;">4桁の半角数字</small>
+                    </div>
+                    <div class="form-group">
+                        <label>支店コード <span class="required">*</span></label>
+                        <input type="text" id="branchCode-${transferCount}" maxlength="3" placeholder="例: 001" required>
+                        <small style="color: #666; margin-top: 5px;">3桁の半角数字</small>
+                    </div>
+                    <div class="form-group">
+                        <label>預金種目 <span class="required">*</span></label>
+                        <select id="accountType-${transferCount}" required>
+                            <option value="">選択してください</option>
+                            <option value="1">普通</option>
+                            <option value="2">当座</option>
+                            <option value="4">貯蓄</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>口座番号 <span class="required">*</span></label>
+                        <input type="text" id="accountNumber-${transferCount}" maxlength="7" placeholder="例: 1234567" required>
+                        <small style="color: #666; margin-top: 5px;">7桁以内の半角数字</small>
+                    </div>
+                    <div class="form-group">
+                        <label>受取人名 <span class="required">*</span></label>
+                        <input type="text" id="recipientName-${transferCount}" maxlength="48" placeholder="例: ﾔﾏﾀﾞ ﾀﾛｳ" required>
+                        <small style="color: #666; margin-top: 5px;">全角カタカナ（48文字以内）</small>
+                    </div>
+                    <div class="form-group">
+                        <label>振込金額 <span class="required">*</span></label>
+                        <input type="number" id="transferAmount-${transferCount}" min="1" max="99999999" placeholder="例: 50000" required>
+                        <small style="color: #666; margin-top: 5px;">1円以上99,999,999円以下</small>
+                    </div>
+                    <div class="form-group">
+                        <label>振込依頼人名</label>
+                        <input type="text" id="senderName-${transferCount}" maxlength="48" placeholder="例: ｽｽﾞｷ ﾊﾅｺ" value="${defaultSenderName}">
+                        <small style="color: #666; margin-top: 5px;">全角カタカナ（空欄可）</small>
+                    </div>
+                </div>
+            `;
+            
+            transferList.appendChild(transferDiv);
+            transfers.push(transferCount);
+            updateTotal();
+            
+            // 新しく追加された要素にイベントリスナーを追加
+            const amountInput = document.getElementById(`transferAmount-${transferCount}`);
+            amountInput.addEventListener('input', updateTotal);
+        }
+
+        // 振込先を削除
+        function removeTransfer(id) {
+            const element = document.getElementById(`transfer-${id}`);
+            if (element) {
+                element.remove();
+                transfers = transfers.filter(t => t !== id);
+                updateTotal();
+            }
+        }
+
+        // 合計を更新
+        function updateTotal() {
+            let totalAmount = 0;
+            let count = 0;
+            
+            transfers.forEach(id => {
+                const amountInput = document.getElementById(`transferAmount-${id}`);
+                if (amountInput && amountInput.value) {
+                    totalAmount += parseInt(amountInput.value) || 0;
+                    count++;
+                }
+            });
+            
+            const totalDisplay = document.getElementById('totalDisplay');
+            const totalAmountEl = document.getElementById('totalAmount');
+            const totalCountEl = document.getElementById('totalCount');
+            
+            if (count > 0) {
+                totalDisplay.style.display = 'block';
+                totalAmountEl.textContent = `¥${totalAmount.toLocaleString()}`;
+                totalCountEl.textContent = `${count}件の振込`;
+            } else {
+                totalDisplay.style.display = 'none';
+            }
+        }
+
+        // バリデーション関数
+        function validateInput(value, type) {
+            switch(type) {
+                case 'bankCode':
+                    return /^\d{4}$/.test(value);
+                case 'branchCode':
+                    return /^\d{3}$/.test(value);
+                case 'accountNumber':
+                    return /^\d{1,7}$/.test(value);
+                case 'amount':
+                    const num = parseInt(value);
+                    return !isNaN(num) && num > 0 && num <= 99999999;
+                case 'recipientName':
+                    return value.length > 0 && value.length <= 48;
+                case 'senderName':
+                    return value.length <= 48;
+                default:
+                    return true;
+            }
+        }
+
+        // 全角を半角に変換
+        function toHalfWidth(str) {
+            return str.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+            });
+        }
+
+        // CSVを生成
+        function generateCSV() {
+            const errors = [];
+            const csvRows = [];
+            
+            // ローディング表示
+            document.getElementById('loading').style.display = 'block';
+            
+            setTimeout(() => {
+                try {
+                    // 振込先データの検証と処理
+                    let totalTransferAmount = 0;
+                    let validTransfers = 0;
+                    
+                    transfers.forEach((id, index) => {
+                        const tBankCode = toHalfWidth(document.getElementById(`bankCode-${id}`).value || '');
+                        const tBranchCode = toHalfWidth(document.getElementById(`branchCode-${id}`).value || '');
+                        const tAccountType = document.getElementById(`accountType-${id}`).value || '';
+                        const tAccountNumber = toHalfWidth(document.getElementById(`accountNumber-${id}`).value || '');
+                        const tRecipientName = document.getElementById(`recipientName-${id}`).value || '';
+                        const tTransferAmount = toHalfWidth(document.getElementById(`transferAmount-${id}`).value || '');
+                        const tSenderName = document.getElementById(`senderName-${id}`).value || '';
+
+                        if (!tBankCode && !tBranchCode && !tAccountType && !tAccountNumber && !tRecipientName && !tTransferAmount) {
+                            return; // 空の振込先はスキップ
+                        }
+
+                        validTransfers++;
+
+                        if (!validateInput(tBankCode, 'bankCode')) {
+                            errors.push(`振込先${index + 1}: 銀行コードは4桁の半角数字で入力してください`);
+                        }
+                        if (!validateInput(tBranchCode, 'branchCode')) {
+                            errors.push(`振込先${index + 1}: 支店コードは3桁の半角数字で入力してください`);
+                        }
+                        if (!tAccountType) {
+                            errors.push(`振込先${index + 1}: 預金種目を選択してください`);
+                        }
+                        if (!validateInput(tAccountNumber, 'accountNumber')) {
+                            errors.push(`振込先${index + 1}: 口座番号は7桁以内の半角数字で入力してください`);
+                        }
+                        if (!validateInput(tRecipientName, 'recipientName')) {
+                            errors.push(`振込先${index + 1}: 受取人名を48文字以内で入力してください`);
+                        }
+                        if (!validateInput(tTransferAmount, 'amount')) {
+                            errors.push(`振込先${index + 1}: 振込金額は1円以上99,999,999円以下で入力してください`);
+                        }
+                        if (!validateInput(tSenderName, 'senderName')) {
+                            errors.push(`振込先${index + 1}: 振込依頼人名は48文字以内で入力してください`);
+                        }
+
+                        if (validateInput(tTransferAmount, 'amount')) {
+                            totalTransferAmount += parseInt(tTransferAmount);
+                        }
+                    });
+
+                    if (validTransfers === 0) {
+                        errors.push('振込先を1件以上入力してください');
+                    }
+
+                    if (errors.length > 0) {
+                        document.getElementById('loading').style.display = 'none';
+                        showErrors(errors);
+                        return;
+                    }
+
+                    // データレコード作成
+                    transfers.forEach(id => {
+                        const tBankCode = toHalfWidth(document.getElementById(`bankCode-${id}`).value || '');
+                        const tBranchCode = toHalfWidth(document.getElementById(`branchCode-${id}`).value || '');
+                        const tAccountType = document.getElementById(`accountType-${id}`).value || '';
+                        const tAccountNumber = toHalfWidth(document.getElementById(`accountNumber-${id}`).value || '');
+                        const tRecipientName = document.getElementById(`recipientName-${id}`).value || '';
+                        const tTransferAmount = toHalfWidth(document.getElementById(`transferAmount-${id}`).value || '');
+                        const tSenderName = document.getElementById(`senderName-${id}`).value || '';
+
+                        if (!tBankCode && !tBranchCode && !tAccountType && !tAccountNumber && !tRecipientName && !tTransferAmount) {
+                            return; // 空の振込先はスキップ
+                        }
+
+                        // データレコード（122文字固定）
+                        const dataRecord = [
+                            '1',                                    // レコード区分
+                            tBankCode.padStart(4, '0'),            // 銀行コード
+                            tBranchCode.padStart(3, '0'),          // 支店コード
+                            tAccountType,                          // 預金種目
+                            tAccountNumber.padEnd(7, ' '),         // 口座番号
+                            tRecipientName.padEnd(48, ' '),        // 受取人名
+                            tTransferAmount.padStart(10, '0'),     // 振込金額
+                            tSenderName.padEnd(48, ' ')            // 振込依頼人名
+                        ].join('');
+
+                        csvRows.push(dataRecord);
+                    });
+
+                    // トレーラーレコード（17文字固定）
+                    const trailerRecord = [
+                        '2',                                    // レコード区分
+                        '0'.padStart(4, '0'),                  // 合計件数
+                        '0'.padStart(12, '0')                  // 合計金額+予備
+                    ].join('');
+
+                    csvRows.push(trailerRecord);
+
+                    // CSVファイルをダウンロード
+                    const csvContent = csvRows.join('\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    
+                    if (link.download !== undefined) {
+                        const url = URL.createObjectURL(blob);
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', `paypay_bank_transfer_${new Date().toISOString().slice(0, 10)}.csv`);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+
+                    document.getElementById('loading').style.display = 'none';
+                    showSuccess(`CSVファイルが正常に生成されました。総振込件数: ${validTransfers}件、総振込金額: ¥${totalTransferAmount.toLocaleString()}`);
+                    
+                } catch (error) {
+                    document.getElementById('loading').style.display = 'none';
+                    showErrors(['CSVファイルの生成中にエラーが発生しました: ' + error.message]);
+                }
+            }, 1000);
+        }
+
+        // エラーメッセージを表示
+        function showErrors(errors) {
+            const errorDiv = document.getElementById('errorMessages');
+            errorDiv.innerHTML = '<div class="error"><strong>⚠️ エラー:</strong><ul>' + 
+                errors.map(error => `<li>${error}</li>`).join('') + '</ul></div>';
+            errorDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 成功メッセージを表示
+        function showSuccess(message) {
+            const errorDiv = document.getElementById('errorMessages');
+            errorDiv.innerHTML = `<div class="info"><strong>✅ 成功:</strong> ${message}</div>`;
+            errorDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 全てクリア
+        function clearAll() {
+            if (confirm('全ての入力内容をクリアしますか？')) {
+                // 基本設定をクリア
+                document.getElementById('defaultSenderName').value = '';
+                
+                // 振込先をすべて削除
+                transfers.forEach(id => {
+                    const element = document.getElementById(`transfer-${id}`);
+                    if (element) {
+                        element.remove();
+                    }
+                });
+                
+                transfers = [];
+                transferCount = 0;
+                updateTotal();
+                
+                // エラーメッセージをクリア
+                document.getElementById('errorMessages').innerHTML = '';
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 最初の振込先を追加
+            addTransfer();
+        });
+    </script>
+</body>
+</html>
